@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/song_controller.dart';
+import '../controllers/user_controller.dart';
 import '../models/song_model.dart';
 import 'edit_profile_screen.dart';
 import 'favorite_songs_screen.dart';
@@ -15,25 +15,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _avatarPath = "assets/avatars/avatar_default.png";
-  String _userName = "Willyam";
-  String _userBio = "suka kamu";
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _avatarPath = prefs.getString('avatarPath') ?? "assets/avatars/avatar_default.png";
-      _userName = prefs.getString('userName') ?? "Willyam";
-      _userBio = prefs.getString('userBio') ?? "Pencinta Musik Sejati";
-    });
-  }
-
   Future<void> _showAddSongDialog() async {
     final titleController = TextEditingController();
     final artistController = TextEditingController();
@@ -67,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
             const Text(
-              "⚠️ Pastikan file audio sudah ada di assets/audio/ dengan nama: ${'judul_lagu.mp3'} (spasi diganti underscore)",
+              "⚠️ Pastikan file audio sudah ada di assets/audio/ dengan nama: judul_lagu.mp3 (spasi diganti underscore)",
               style: TextStyle(color: Colors.orange, fontSize: 12),
             ),
           ],
@@ -87,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: titleController.text,
                   artist: artistController.text,
                   audioPath: audioFileName,
-                  coverAssetPath: coverFileName, // asumsikan cover ada dengan nama yang sama
+                  coverAssetPath: coverFileName,
                 );
                 Provider.of<SongController>(context, listen: false).addSong(newSong);
                 Navigator.pop(context);
@@ -106,6 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userController = context.watch<UserController>();
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D15),
       body: SafeArea(
@@ -116,23 +98,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                backgroundImage: AssetImage(_avatarPath),
+                backgroundImage: AssetImage(userController.avatarPath),
                 backgroundColor: Colors.grey[800],
               ),
               const SizedBox(height: 20),
               Text(
-                _userName,
+                userController.userName,
                 style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                _userBio,
+                userController.userBio,
                 style: const TextStyle(color: Colors.white54, fontSize: 14),
               ),
               const SizedBox(height: 30),
               _buildMenuTile(Icons.edit, "Edit Profil", () async {
                 await Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
-                _loadProfile();
+                // Setelah kembali, UserController sudah otomatis update karena menggunakan shared_preferences
+                // Tapi panggil refresh untuk memastikan
+                context.read<UserController>().refresh();
               }),
               const SizedBox(height: 10),
               _buildMenuTile(Icons.favorite, "Lagu Favorit", () {

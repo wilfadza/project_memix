@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/song_controller.dart';
+import '../controllers/user_controller.dart';
 import 'player_screen.dart';
 import 'profile_screen.dart';
 import 'library_screen.dart';
@@ -201,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ================= HOME CONTENT YANG DIPERCANTIK =================
+// ================= HOME CONTENT (avatar glow, sejajar, lebih besar) =================
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
@@ -224,90 +225,155 @@ class HomeContent extends StatelessWidget {
           floating: true,
           pinned: false,
           expandedHeight: 120,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF1A1A2E),
-                    Color(0xFF0D0D15),
-                  ],
-                ),
-              ),
-            ),
-            title: const Text(
-              "Memix",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-                shadows: [Shadow(blurRadius: 8, color: Colors.black45)],
-              ),
-            ),
-            centerTitle: false,
-            titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+          flexibleSpace: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  // Background gradient
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF1A1A2E),
+                          Color(0xFF0D0D15),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Teks "Memix" di kiri bawah
+                  const Positioned(
+                    left: 20,
+                    bottom: 16,
+                    child: Text(
+                      "Memix",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                        shadows: [Shadow(blurRadius: 8, color: Colors.black45)],
+                      ),
+                    ),
+                  ),
+                  // Avatar di kanan bawah
+                  Positioned(
+                    right: 20,
+                    bottom: 16,
+                    child: Consumer<UserController>(
+                      builder: (context, userController, child) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.6),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundImage: AssetImage(userController.avatarPath),
+                              backgroundColor: Colors.grey[800],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_none, color: Colors.white70),
-              onPressed: () {},
-            ),
-          ],
+          actions: const [], // tidak perlu actions karena sudah ada di flexibleSpace
         ),
+        // Greeting section dengan UserController (dinamis)
         SliverPadding(
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange.withOpacity(0.1), Colors.transparent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${_getGreeting()}, Willyam!",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
+              Consumer<UserController>(
+                builder: (context, userController, child) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange.withOpacity(0.1), Colors.transparent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Temukan musik favoritmu hari ini",
-                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${_getGreeting()}, ${userController.userName}!",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "Temukan musik favoritmu hari ini",
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 16),
             ]),
           ),
         ),
+        // REKOMENDASI
         SliverToBoxAdapter(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  "✨ Rekomendasi Untukmu",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "✨ Rekomendasi Untukmu",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Fitur dalam pengembangan")),
+                        );
+                      },
+                      child: const Text(
+                        "Lihat semua",
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
@@ -332,6 +398,7 @@ class HomeContent extends StatelessWidget {
             ],
           ),
         ),
+        // TRENDING
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -349,7 +416,7 @@ class HomeContent extends StatelessWidget {
             final allSongs = controller.songs;
             List<Song> trendingSongs;
             if (allSongs.length >= 3) {
-              trendingSongs = (allSongs.toList()..shuffle()).take(3).toList();
+              trendingSongs = allSongs.take(3).toList();
             } else {
               trendingSongs = allSongs;
             }
@@ -361,6 +428,7 @@ class HomeContent extends StatelessWidget {
             );
           },
         ),
+        // SEMUA LAGU
         SliverPadding(
           padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
           sliver: SliverToBoxAdapter(
@@ -470,7 +538,6 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // ========== INI YANG DIPERBAIKI (tanpa leadingWidth) ==========
   Widget _buildTrendingItem(Song song, int rank, SongController controller) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/song_controller.dart';
+import 'controllers/user_controller.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -10,8 +11,11 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => SongController(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SongController()),
+        ChangeNotifierProvider(create: (_) => UserController()),
+      ],
       child: MaterialApp(
         title: 'Memix',
         debugShowCheckedModeBanner: false,
