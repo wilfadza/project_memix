@@ -38,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(color: Colors.white10),
           _buildPlainTile("Bahasa", "Bahasa Indonesia"),
           _buildPlainTile("Kualitas Audio", "Sangat Tinggi"),
-          _buildPlainTile("Tentang Misix", ""),
+          _buildPlainTile("Tentang Memix", ""),
         ],
       ),
     );

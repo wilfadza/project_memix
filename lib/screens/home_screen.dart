@@ -56,7 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(24),
                       child: Column(
                         children: [
-                          // Progress bar yang lebih stylish
                           LinearProgressIndicator(
                             value: controller.duration.inSeconds > 0
                                 ? controller.position.inSeconds / controller.duration.inSeconds
@@ -70,25 +69,33 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               child: Row(
                                 children: [
-                                  // Mini artwork
                                   Container(
                                     width: 42,
                                     height: 42,
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [Colors.orange.shade700, Colors.orange.shade400],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
                                       borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(color: Colors.orange.withOpacity(0.3), blurRadius: 4),
-                                      ],
+                                      image: controller.currentSong!.coverAssetPath != null
+                                          ? DecorationImage(
+                                        image: AssetImage(controller.currentSong!.coverAssetPath!),
+                                        fit: BoxFit.cover,
+                                      )
+                                          : null,
                                     ),
-                                    child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                                    child: controller.currentSong!.coverAssetPath == null
+                                        ? Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Colors.orange.shade700, Colors.orange.shade400],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                                    )
+                                        : null,
                                   ),
                                   const SizedBox(width: 12),
-                                  // Informasi lagu
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   ),
-                                  // Badge durasi
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
@@ -128,7 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  // Tombol kontrol
                                   _buildMiniButton(
                                     icon: controller.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
                                     color: Colors.orange,
@@ -196,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ========== HomeContent (sama seperti sebelumnya, tapi saya sertakan ulang) ==========
+// ================= HOME CONTENT YANG DIPERCANTIK =================
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
@@ -211,14 +216,38 @@ class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         SliverAppBar(
-          backgroundColor: const Color(0xFF0D0D15),
+          backgroundColor: Colors.transparent,
           elevation: 0,
           floating: true,
-          title: const Text(
-            "Memix",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 28),
+          pinned: false,
+          expandedHeight: 120,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1A1A2E),
+                    Color(0xFF0D0D15),
+                  ],
+                ),
+              ),
+            ),
+            title: const Text(
+              "Memix",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                shadows: [Shadow(blurRadius: 8, color: Colors.black45)],
+              ),
+            ),
+            centerTitle: false,
+            titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
           ),
           actions: [
             IconButton(
@@ -231,16 +260,37 @@ class HomeContent extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              Text(
-                "${_getGreeting()}, Willyam!",
-                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.withOpacity(0.1), Colors.transparent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${_getGreeting()}, Willyam!",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Temukan musik favoritmu hari ini",
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                "Temukan musik favoritmu hari ini",
-                style: TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
             ]),
           ),
         ),
@@ -251,24 +301,29 @@ class HomeContent extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  "Rekomendasi Untukmu",
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  "✨ Rekomendasi Untukmu",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 200,
+                height: 220,
                 child: Consumer<SongController>(
                   builder: (context, controller, child) {
                     final recSongs = controller.songs.take(3).toList();
+                    if (recSongs.isEmpty) {
+                      return const Center(child: Text("Tidak ada lagu", style: TextStyle(color: Colors.white54)));
+                    }
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: recSongs.length,
-                      itemBuilder: (context, index) {
-                        final song = recSongs[index];
-                        return _buildHorizontalCard(song, controller, context);
-                      },
+                      itemBuilder: (context, index) => _buildModernCard(recSongs[index], controller, context),
                     );
                   },
                 ),
@@ -282,8 +337,8 @@ class HomeContent extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               const Text(
-                "Trending Minggu Ini",
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                "🔥 Trending Minggu Ini",
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.3),
               ),
               const SizedBox(height: 12),
             ]),
@@ -291,81 +346,108 @@ class HomeContent extends StatelessWidget {
         ),
         Consumer<SongController>(
           builder: (context, controller, child) {
-            final trendingSongs = controller.songs.length >= 2
-                ? [controller.songs[1], controller.songs[2], controller.songs[0]]
-                : controller.songs;
+            final allSongs = controller.songs;
+            List<Song> trendingSongs;
+            if (allSongs.length >= 3) {
+              trendingSongs = (allSongs.toList()..shuffle()).take(3).toList();
+            } else {
+              trendingSongs = allSongs;
+            }
             return SliverList(
               delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final song = trendingSongs[index % trendingSongs.length];
-                  return _buildListTile(song, controller);
-                },
+                    (context, index) => _buildTrendingItem(trendingSongs[index], index + 1, controller),
                 childCount: trendingSongs.length,
               ),
             );
           },
         ),
         SliverPadding(
-          padding: const EdgeInsets.only(top: 16, bottom: 100),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              const Text(
-                "🎵 Semua Lagu",
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-            ]),
+          padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
+          sliver: SliverToBoxAdapter(
+            child: Row(
+              children: [
+                const Icon(Icons.library_music, color: Colors.orange, size: 24),
+                const SizedBox(width: 8),
+                const Text(
+                  "Semua Lagu",
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: -0.3),
+                ),
+                const SizedBox(width: 8),
+                Consumer<SongController>(
+                  builder: (context, controller, child) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "${controller.songs.length} lagu",
+                      style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+        const SliverPadding(padding: EdgeInsets.only(top: 12)),
         Consumer<SongController>(
           builder: (context, controller, child) {
             return SliverList(
               delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final song = controller.songs[index];
-                  return _buildListTile(song, controller);
-                },
+                    (context, index) => _buildModernListTile(controller.songs[index], controller),
                 childCount: controller.songs.length,
               ),
             );
           },
         ),
+        const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
       ],
     );
   }
 
-  Widget _buildHorizontalCard(Song song, SongController controller, BuildContext context) {
+  Widget _buildModernCard(Song song, SongController controller, BuildContext context) {
     return GestureDetector(
       onTap: () => controller.playSong(song),
       child: Container(
-        width: 150,
+        width: 160,
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C29),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: Colors.black38, blurRadius: 8, offset: const Offset(0, 4)),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.orange.shade800, Colors.orange.shade400],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: song.coverAssetPath != null
+                  ? Image.asset(song.coverAssetPath!, width: 120, height: 120, fit: BoxFit.cover)
+                  : Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.orange.shade800, Colors.orange.shade400],
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(16),
+                child: const Icon(Icons.music_note, size: 50, color: Colors.white),
               ),
-              child: const Icon(Icons.music_note, size: 50, color: Colors.white),
             ),
             const SizedBox(height: 12),
-            Text(
-              song.title,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                song.title,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Text(
               song.artist,
@@ -388,22 +470,71 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildListTile(Song song, SongController controller) {
-    return Card(
-      color: const Color(0xFF1C1C29),
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+  // ========== INI YANG DIPERBAIKI (tanpa leadingWidth) ==========
+  Widget _buildTrendingItem(Song song, int rank, SongController controller) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C29),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: ListTile(
+        leading: SizedBox(
+          width: 50,
+          child: Center(
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  "$rank",
+                  style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ),
+          ),
+        ),
+        title: Text(song.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        subtitle: Text(song.artist, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+        trailing: IconButton(
+          icon: Icon(
+            controller.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
+            color: controller.isFavorite(song) ? Colors.redAccent : Colors.white30,
+          ),
+          onPressed: () => controller.toggleFavorite(song),
+        ),
+        onTap: () => controller.playSong(song),
+      ),
+    );
+  }
+
+  Widget _buildModernListTile(Song song, SongController controller) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C29),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: const Offset(0, 2)),
+        ],
+      ),
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Container(
+          child: song.coverAssetPath != null
+              ? Image.asset(song.coverAssetPath!, width: 50, height: 50, fit: BoxFit.cover)
+              : Container(
             width: 50,
             height: 50,
             color: Colors.orange.withOpacity(0.2),
-            child: const Icon(Icons.play_arrow, color: Colors.orange),
+            child: const Icon(Icons.music_note, color: Colors.orange),
           ),
         ),
-        title: Text(song.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(song.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
         subtitle: Text(song.artist, style: const TextStyle(color: Colors.white54, fontSize: 12)),
         trailing: IconButton(
           icon: Icon(

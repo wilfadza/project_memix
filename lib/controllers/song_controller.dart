@@ -6,9 +6,41 @@ class SongController with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   final List<Song> _songs = [
-    Song(id: 1, title: "Tanpa Cinta", artist: "Tiara Andini", audioPath: "audio/tanpa_cinta.mp3"),
-    Song(id: 2, title: "Pesan Terakhir", artist: "Lyodra", audioPath: "audio/Pesan_Terakhir.mp3"),
-    Song(id: 3, title: "Bawa Dia Kembali", artist: "Mahalini", audioPath: "audio/Bawa_Dia_Kembali.mp3"),
+    Song(
+      id: 1,
+      title: "Tanpa Cinta",
+      artist: "Tiara Andini",
+      audioPath: "audio/tanpa_cinta.mp3",
+      coverAssetPath: "covers/tanpa_cinta.jpg",
+    ),
+    Song(
+      id: 2,
+      title: "Pesan Terakhir",
+      artist: "Lyodra",
+      audioPath: "audio/Pesan_Terakhir.mp3",
+      coverAssetPath: "covers/pesan_terakhir.jpg",
+    ),
+    Song(
+      id: 3,
+      title: "Bawa Dia Kembali",
+      artist: "Mahalini",
+      audioPath: "audio/Bawa_Dia_Kembali.mp3",
+      coverAssetPath: "covers/bawa_dia_kembali.jpg",
+    ),
+    Song(
+      id: 4,
+      title: "Confident",
+      artist: "Justin Bieber",
+      audioPath: "audio/Confident.mp3",
+      coverAssetPath: "covers/confident.jpg",
+    ),
+    Song(
+      id: 5,
+      title: "Flatline",
+      artist: "Justin Bieber",
+      audioPath: "audio/Flatline.mp3",
+      coverAssetPath: "covers/flatline.jpg",
+    ),
   ];
 
   final List<Song> _favoriteSongs = [];
@@ -37,6 +69,17 @@ class SongController with ChangeNotifier {
       _isPlaying = s == PlayerState.playing;
       notifyListeners();
     });
+  }
+
+  void addSong(Song newSong) {
+    _songs.add(newSong);
+    notifyListeners();
+  }
+
+  void removeSong(Song song) {
+    _songs.removeWhere((s) => s.id == song.id);
+    _favoriteSongs.removeWhere((s) => s.id == song.id);
+    notifyListeners();
   }
 
   void toggleFavorite(Song song) {

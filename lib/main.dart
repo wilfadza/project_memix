@@ -4,27 +4,22 @@ import 'controllers/song_controller.dart';
 import 'screens/home_screen.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => SongController(),
-      child: const MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Misix',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D0D15),
-        primaryColor: Colors.orange,
+    return ChangeNotifierProvider(
+      create: (context) => SongController(),
+      child: MaterialApp(
+        title: 'Memix',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: const Color(0xFF0D0D15),
+        ),
+        home: HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }

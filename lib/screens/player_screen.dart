@@ -20,119 +20,219 @@ class PlayerScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: const Color(0xFF0D0D15),
           body: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                // Tombol close
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 30),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Gambar placeholder album
+                // Background gradient
                 Container(
-                  height: 200,
-                  width: 200,
                   decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFF1A1A2E),
+                        const Color(0xFF0D0D15),
+                      ],
+                    ),
                   ),
-                  child: const Icon(Icons.music_note, size: 80, color: Colors.orange),
                 ),
-                const SizedBox(height: 30),
-
-                // Judul lagu
-                Text(
-                  song.title,
-                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  song.artist,
-                  style: const TextStyle(color: Colors.white54, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-
-                // Tombol favorite
-                IconButton(
-                  icon: Icon(
-                    controller.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
-                    color: controller.isFavorite(song) ? Colors.redAccent : Colors.white70,
-                    size: 30,
-                  ),
-                  onPressed: () => controller.toggleFavorite(song),
-                ),
-                const SizedBox(height: 20),
-
-                // Slider durasi
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Slider(
-                        value: controller.duration.inSeconds > 0
-                            ? controller.position.inSeconds.toDouble()
-                            : 0,
-                        max: controller.duration.inSeconds > 0
-                            ? controller.duration.inSeconds.toDouble()
-                            : 1,
-                        activeColor: Colors.orange,
-                        inactiveColor: Colors.white24,
-                        onChanged: (value) {
-                          controller.seek(Duration(seconds: value.toInt()));
-                        },
+                Column(
+                  children: [
+                    // Header dengan tombol close
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 30),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const Text(
+                            "Now Playing",
+                            style: TextStyle(color: Colors.white54, fontSize: 14, letterSpacing: 1),
+                          ),
+                          const SizedBox(width: 40),
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(_formatDuration(controller.position), style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                            Text(_formatDuration(controller.duration), style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                    ),
+                    const Spacer(),
+                    // Cover Art dengan efek glow - support asset cover
+                    Hero(
+                      tag: "album_art",
+                      child: Container(
+                        height: 280,
+                        width: 280,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.orange.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 5,
+                            ),
                           ],
+                          image: song.coverAssetPath != null
+                              ? DecorationImage(
+                            image: AssetImage(song.coverAssetPath!),
+                            fit: BoxFit.cover,
+                          )
+                              : null,
+                        ),
+                        child: song.coverAssetPath == null
+                            ? Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.orange.shade800, Colors.orange.shade400],
+                            ),
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          child: const Icon(Icons.music_note, size: 100, color: Colors.white),
+                        )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    // Judul & Artist
+                    Text(
+                      song.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      song.artist,
+                      style: const TextStyle(color: Colors.white54, fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    // Favorit button with animation
+                    GestureDetector(
+                      onTap: () => controller.toggleFavorite(song),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: controller.isFavorite(song)
+                              ? Colors.redAccent.withOpacity(0.2)
+                              : Colors.transparent,
+                        ),
+                        child: Icon(
+                          controller.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
+                          color: controller.isFavorite(song) ? Colors.redAccent : Colors.white70,
+                          size: 32,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Tombol kontrol
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () => controller.playPrevious(),
-                      icon: const Icon(Icons.skip_previous, color: Colors.white, size: 40),
                     ),
-                    const SizedBox(width: 20),
-                    IconButton(
-                      onPressed: () => controller.togglePlayPause(),
-                      icon: Icon(
-                        controller.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                        color: Colors.orange,
-                        size: 60,
+                    const Spacer(),
+                    // Slider durasi
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          SliderTheme(
+                            data: SliderThemeData(
+                              trackHeight: 4,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                              activeTrackColor: Colors.orange,
+                              inactiveTrackColor: Colors.white24,
+                              thumbColor: Colors.orange,
+                              overlayColor: Colors.orange.withOpacity(0.2),
+                            ),
+                            child: Slider(
+                              value: controller.duration.inSeconds > 0
+                                  ? controller.position.inSeconds.toDouble()
+                                  : 0,
+                              max: controller.duration.inSeconds > 0
+                                  ? controller.duration.inSeconds.toDouble()
+                                  : 1,
+                              onChanged: (value) {
+                                controller.seek(Duration(seconds: value.toInt()));
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _formatDuration(controller.position),
+                                  style: const TextStyle(color: Colors.white54, fontSize: 13),
+                                ),
+                                Text(
+                                  _formatDuration(controller.duration),
+                                  style: const TextStyle(color: Colors.white54, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    IconButton(
-                      onPressed: () => controller.playNext(),
-                      icon: const Icon(Icons.skip_next, color: Colors.white, size: 40),
+                    const SizedBox(height: 16),
+                    // Tombol kontrol
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildControlButton(
+                          icon: Icons.skip_previous,
+                          size: 40,
+                          onPressed: () => controller.playPrevious(),
+                        ),
+                        const SizedBox(width: 32),
+                        _buildPlayPauseButton(controller),
+                        const SizedBox(width: 32),
+                        _buildControlButton(
+                          icon: Icons.skip_next,
+                          size: 40,
+                          onPressed: () => controller.playNext(),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 40),
                   ],
                 ),
-                const SizedBox(height: 30),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildControlButton({required IconData icon, required double size, required VoidCallback onPressed}) {
+    return IconButton(
+      icon: Icon(icon, color: Colors.white, size: size),
+      onPressed: onPressed,
+      splashRadius: 30,
+    );
+  }
+
+  Widget _buildPlayPauseButton(SongController controller) {
+    return GestureDetector(
+      onTap: () => controller.togglePlayPause(),
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 12, spreadRadius: 2),
+          ],
+        ),
+        child: Icon(
+          controller.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+          color: Colors.orange,
+          size: 70,
+        ),
+      ),
     );
   }
 

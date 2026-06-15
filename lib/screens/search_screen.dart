@@ -11,106 +11,74 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  List<Song> _searchResults = [];
+  String _query = "";
+  List<Song> _results = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-    final songs = Provider.of<SongController>(context, listen: false).songs;
+  void _search(SongController controller) {
     setState(() {
-      _searchResults = songs.where((song) {
-        return song.title.toLowerCase().contains(query) ||
-            song.artist.toLowerCase().contains(query);
-      }).toList();
+      _results = controller.songs
+          .where((s) => s.title.toLowerCase().contains(_query.toLowerCase()) ||
+          s.artist.toLowerCase().contains(_query.toLowerCase()))
+          .toList();
     });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D15),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              TextField(
-                controller: _searchController,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: "Cari musik, artis, atau album...",
-                  hintStyle: const TextStyle(color: Colors.white30),
-                  prefixIcon: const Icon(Icons.search, color: Colors.orange),
-                  filled: true,
-                  fillColor: const Color(0xFF1C1C29),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _searchResults.isEmpty && _searchController.text.isNotEmpty
-                    ? const Center(child: Text("Tidak ditemukan", style: TextStyle(color: Colors.white54)))
-                    : ListView.builder(
-                  itemCount: _searchResults.isEmpty && _searchController.text.isEmpty
-                      ? Provider.of<SongController>(context).songs.length
-                      : _searchResults.length,
-                  itemBuilder: (context, i) {
-                    final song = _searchResults.isEmpty && _searchController.text.isEmpty
-                        ? Provider.of<SongController>(context).songs[i]
-                        : _searchResults[i];
-                    return _buildSongTile(song, context);
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+      appBar: AppBar(
+        title: const Text("Temukan", style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF0D0D15),
+        elevation: 0,
       ),
-    );
-  }
-
-  Widget _buildSongTile(Song song, BuildContext context) {
-    final controller = Provider.of<SongController>(context, listen: false);
-    return Card(
-      color: const Color(0xFF1C1C29),
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: ListTile(
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Colors.orange.shade700, Colors.orange.shade400]),
-            borderRadius: BorderRadius.circular(14),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Cari lagu atau artis...",
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                filled: true,
+                fillColor: const Color(0xFF1C1C29),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+              ),
+              onChanged: (value) {
+                _query = value;
+                _search(context.read<SongController>());
+              },
+            ),
           ),
-          child: const Icon(Icons.music_note, color: Colors.white),
-        ),
-        title: Text(song.title, style: const TextStyle(color: Colors.white)),
-        subtitle: Text(song.artist, style: const TextStyle(color: Colors.white54)),
-        trailing: IconButton(
-          icon: Icon(
-            controller.isFavorite(song) ? Icons.favorite : Icons.favorite_border,
-            color: controller.isFavorite(song) ? Colors.redAccent : Colors.white30,
+          Expanded(
+            child: Consumer<SongController>(
+              builder: (context, controller, child) {
+                if (_query.isEmpty) {
+                  return const Center(child: Text("Ketik sesuatu untuk mencari", style: TextStyle(color: Colors.white54)));
+                }
+                if (_results.isEmpty) {
+                  return const Center(child: Text("Tidak ditemukan", style: TextStyle(color: Colors.white54)));
+                }
+                return ListView.builder(
+                  itemCount: _results.length,
+                  itemBuilder: (context, index) {
+                    final song = _results[index];
+                    return ListTile(
+                      leading: song.coverAssetPath != null
+                          ? ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.asset(song.coverAssetPath!, width: 40, height: 40, fit: BoxFit.cover))
+                          : const Icon(Icons.music_note, color: Colors.orange),
+                      title: Text(song.title, style: const TextStyle(color: Colors.white)),
+                      subtitle: Text(song.artist, style: const TextStyle(color: Colors.white54)),
+                      onTap: () => controller.playSong(song),
+                    );
+                  },
+                );
+              },
+            ),
           ),
-          onPressed: () => controller.toggleFavorite(song),
-        ),
-        onTap: () => controller.playSong(song),
+        ],
       ),
     );
   }
